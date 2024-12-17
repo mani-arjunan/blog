@@ -1,0 +1,83 @@
+body {
+  margin: auto;
+  max-width: 650pt;
+  background-color: #082932;
+  padding: 16pt;
+  font-family:
+    "Source Sans Pro",
+    -apple-system,
+    BlinkMacSystemFont;
+  color: #d4d4d4;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: #799ba5;
+  font-weight: bolder;
+  font-family: "Schibsted Grotesk", sans-serif;
+  margin: 25pt 0 25pt 0;
+}
+
+p {
+  line-height: 20pt;
+  font-size: 15pt;
+  font-family:
+    "Source Sans Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+li {
+  line-height: 40pt;
+}
+
+a {
+  margin: 5pt 0 5pt 0;
+  color: #799ba5;
+  text-decoration: none;
+}
+
+main {
+  min-height: calc(90vh - 20pt);
+}
+
+#blog-list {
+  font-size: 24pt;
+}
+
+ul {
+  list-style-type: none;
+}
+
+/**/
+/* summary { */
+/*   cursor: pointer; */
+/*   padding: 10pt 0 10pt 0; */
+/*   font-size: 18pt; */
+/*   font-weight: bold; */
+/* } */
+/**/
+/* pre { */
+/*   font-size: 8pt; */
+/* } */
+/**/
+#social-links {
+  display: flex;
+  gap: 10pt;
+}
+
+#social-links a {
+  margin: 10pt 0 0 0;
+}
+
+#social-links p {
+  margin: 10pt 0 0 0;
+  margin-left: auto;
+}
