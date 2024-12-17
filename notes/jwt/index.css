@@ -1,0 +1,13 @@
+img {
+  width: 100%;
+}
+
+a {
+  margin: 5pt 0 5pt 0;
+  text-decoration: none;
+  color: #799ba5;
+}
+
+li {
+  line-height: 20pt;
+}
