@@ -1,170 +1,174 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Traceroute! under the hood</title>
+    <link href="../global.css" rel="stylesheet" />
+    <link href="./index.css" rel="stylesheet" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Traceroute! under the hood</title>
-  <link href="../global.css" rel="stylesheet" />
-  <link href="./index.css" rel="stylesheet" />
-</head>
-
-<body>
-  <a href="../">Home</a>
-  <h1>Traceroute: How It Works Under the Hood</h1>
-  <p>
-    Many software devs have already aware of the tool called
-    <b>Traceroute</b>. For those who don’t know, Traceroute is a tool, used to
-    determine the path of your request transfer over the internet.
-  </p>
-  <p>
-    For example, if you run traceroute https://google.com, it shows you the
-    network path that your data packets take to reach <b>google.com</b> from
-    <b>your network.</b>
-  </p>
-  <br />
-  <img src="./traceroute.webp" alt="Traceroute" />
-  <br />
-  <h2>
-    Before getting into the details, will clear about some basic stuff that is
-    associated to traceroute.
-  </h2>
-  <h3>The OSI Model</h3>
-  <p>
-    As many of you may be aware, the OSI (Open Systems Interconnection) model
-    is a framework used to understand network stuff. Since this article
-    focuses more on Traceroute, I will try to cover more about the stuff that
-    is happening on Layer 3 of the OSI model, the <b>Network</b> Layer. You
-    can read more about the OSI Model
-    <a target="_blank"
-      href="https://www.cloudflare.com/en-gb/learning/ddos/glossary/open-systems-interconnection-model-osi/">here</a>.
-  </p>
-  <h3>Layer 3(Network Layer)</h3>
-  <p>
-    Layer 3, or the Network Layer, is responsible for transmitting our data in
-    form of <b>packets</b> between devices on a network. Particularly, it
-    handles the transmission of packets from our source IP to the destination
-    IP.
-  </p>
-  <p>
-    It does not care about anything else like <b>port numbers</b> or the
-    actual application-level communication. Its primary job is to route the
-    packets from one device to another across different networks.
-  </p>
-  <img src="./layer3.webp" alt="Layer 3(Network Layer)" />
-  <cite>
-    A simplified packet representation of an IP packet (referenced from
-    Wikipedia).
-  </cite>
-  <h3>ICMP</h3>
-  <p>
-    ICMP (Internet Control Message Protocol) is a protocol that too comes
-    under Layer 3 (the Network Layer).
-  </p>
-  <p>
-    It’s mostly used by tools like <b>ping</b> and <b>traceroute</b> to send
-    information or error messages about the network conditions.
-  </p>
-  <p>
-    ICMP plays a crucial part for the functioning of Traceroute, as it helps
-    to send the progress of data packets as they move across the internet(in
-    simple terms across different routers/devices).
-  </p>
-  <h3>TTL</h3>
-  <p>
-    Now, let’s talk about <b>TTL</b> (Time To Live), which serves as an
-    important concept to understand how Traceroute works.
-  </p>
-  <p>
-    TTL serves many purposes, but one of its primary purpose is to prevent
-    packets from circulating indefinitely inside network devices(routers) if
-    in case they get stuck in a routing loop.
-  </p>
-  <p>
-    Imagine you’re sending a packet from your home network to a Google server.
-    Along the way, the packet may pass through multiple devices(for eg
-    Router1, Router2, Router3, etc). What if, due to some network failure, the
-    packet starts looping between two routers indefinitely (e.g., Router 1 →
-    Router 3 → Router 2 → Router 3 → Router 2… and so on)?
-  </p>
-  <p>
-    To prevent this kinda looping scenario, TTL comes handy. TTL ensures that
-    if a packet is stuck in such a loop, it will eventually be discarded after
-    reaching its TTL limit, and the sender will be notified with an error
-    message
-  </p>
-  <h3>How devices(eg routers) make use of this TTL</h3>
-  <p>
-    Whenever a source router starts to send packet, it starts with an initial
-    TTL value (for this example, let’s say it starts at TTL=3). Each time the
-    packet passes through a router, that router decrements the TTL value by 1.
-    This process continues to travel across routers, whenever this TTL value
-    becomes 0, the router discards the packet and sends an ICMP message to its
-    sender with the error code as <b>“Time Exceeded”</b>.
-  </p>
-  <p>
-    This mechanism ensures that packets that can’t find their destination do
-    not remain on the network forever.
-  </p>
-  <img src="./TTL.webp" alt="TTL" />
-  <cite>
-    From the above image, Since the packets can able to reach from
-    src(1.1.1.1) to dest(5.5.5.5), discarding of packet is not needed.</cite>
-  <h3>How Traceroute uses the TTL to determine the path</h3>
-  <p>
-    Traceroute basically uses this <b>TTL</b> value to map the path across the
-    src and dest networks.
-  </p>
-  <p>
-    Traceroute begins by sending packets with a low TTL value — initially 1
-    from the src network. The first router in the path receives the packet and
-    decrements the TTL by 1, since now the TTL becomes 0, the router discards
-    the packet and sends an ICMP message “Time Exceeded” back to the sender.
-  </p>
-  <p>
-    Traceroute then again increments the TTL and sends another packet with
-    TTL=2. This time, the first router allows the packet to pass by
-    decrementing the TTL value with 1, and the second router receives it. The
-    second router again decrements the TTL value by 1, since now the TTL
-    becomes 0, the router discards the packet and sends an ICMP message “Time
-    Exceeded” back to its sender.
-  </p>
-  <p>
-    This process repeats with incrementing TTL values until the packet reaches
-    the destination. At that point, the destination sends an ICMP “Destination
-    Unreachable” or “Echo Reply” message back to the sender, signaling that
-    the trace is complete. In this way, Traceroute can determine the path
-    (i.e., the sequence of routers) taken by the packet to reach the
-    destination.
-  </p>
-  <cite>Following 3 images explain how traceroute can able to fetch the path by
-    each time incrementing the value of <b>TTL</b> by 1, untill it reaches the
-    destination path.</cite>
-  <br />
-  <br />
-  <img src="./trace1.webp" alt="trace1" />
-  <img src="./trace2.webp" alt="trace2" />
-  <img src="./trace3.webp" alt="trace3" />
-  <p>
-    Yep, this is how traceroute use <b>TTL</b> effectively in order to
-    determine the network path.
-  </p>
-  <h3>Final Note, Can Traceroute be wrong</h3>
-  <p>
-    While exploring this Traceroute working, I had a question with myself,
-    What happens when the network path changes? since, networks are dynamic,
-    and routing paths can change for many reasons like load balancing, node
-    failure, or changes in routing rules.
-  </p>
-  <p>
-    In these cases, Traceroute may
-    <b>not always gives the most accurate or up-to-date network path</b>. It's
-    important to remember that traceroute gives the path at the time that it
-    runs, and this path could change depending on the network's current state.
-    It's a useful tool for troubleshooting, but it may not be always 100%
-    reliable in our dynamic network environment.
-  </p>
-  <hr />
-</body>
-
+  <body>
+    <a class="home" href="../"><Home</a>
+    <h1>Traceroute: How It Works Under the Hood</h1>
+    <p>
+      Many software devs have already aware of the tool called
+      <b>Traceroute</b>. For those who don’t know, Traceroute is a tool, used to
+      determine the path of your request transfer over the internet.
+    </p>
+    <p>
+      For example, if you run traceroute https://google.com, it shows you the
+      network path that your data packets take to reach <b>google.com</b> from
+      <b>your network.</b>
+    </p>
+    <br />
+    <img src="./traceroute.webp" alt="Traceroute" />
+    <br />
+    <h2>
+      Before getting into the details, will clear about some basic stuff that is
+      associated to traceroute.
+    </h2>
+    <h3>The OSI Model</h3>
+    <p>
+      As many of you may be aware, the OSI (Open Systems Interconnection) model
+      is a framework used to understand network stuff. Since this article
+      focuses more on Traceroute, I will try to cover more about the stuff that
+      is happening on Layer 3 of the OSI model, the <b>Network</b> Layer. You
+      can read more about the OSI Model
+      <a
+        target="_blank"
+        href="https://www.cloudflare.com/en-gb/learning/ddos/glossary/open-systems-interconnection-model-osi/"
+        >here</a
+      >.
+    </p>
+    <h3>Layer 3(Network Layer)</h3>
+    <p>
+      Layer 3, or the Network Layer, is responsible for transmitting our data in
+      form of <b>packets</b> between devices on a network. Particularly, it
+      handles the transmission of packets from our source IP to the destination
+      IP.
+    </p>
+    <p>
+      It does not care about anything else like <b>port numbers</b> or the
+      actual application-level communication. Its primary job is to route the
+      packets from one device to another across different networks.
+    </p>
+    <img src="./layer3.webp" alt="Layer 3(Network Layer)" />
+    <cite>
+      A simplified packet representation of an IP packet (referenced from
+      Wikipedia).
+    </cite>
+    <h3>ICMP</h3>
+    <p>
+      ICMP (Internet Control Message Protocol) is a protocol that too comes
+      under Layer 3 (the Network Layer).
+    </p>
+    <p>
+      It’s mostly used by tools like <b>ping</b> and <b>traceroute</b> to send
+      information or error messages about the network conditions.
+    </p>
+    <p>
+      ICMP plays a crucial part for the functioning of Traceroute, as it helps
+      to send the progress of data packets as they move across the internet(in
+      simple terms across different routers/devices).
+    </p>
+    <h3>TTL</h3>
+    <p>
+      Now, let’s talk about <b>TTL</b> (Time To Live), which serves as an
+      important concept to understand how Traceroute works.
+    </p>
+    <p>
+      TTL serves many purposes, but one of its primary purpose is to prevent
+      packets from circulating indefinitely inside network devices(routers) if
+      in case they get stuck in a routing loop.
+    </p>
+    <p>
+      Imagine you’re sending a packet from your home network to a Google server.
+      Along the way, the packet may pass through multiple devices(for eg
+      Router1, Router2, Router3, etc). What if, due to some network failure, the
+      packet starts looping between two routers indefinitely (e.g., Router 1 →
+      Router 3 → Router 2 → Router 3 → Router 2… and so on)?
+    </p>
+    <p>
+      To prevent this kinda looping scenario, TTL comes handy. TTL ensures that
+      if a packet is stuck in such a loop, it will eventually be discarded after
+      reaching its TTL limit, and the sender will be notified with an error
+      message
+    </p>
+    <h3>How devices(eg routers) make use of this TTL</h3>
+    <p>
+      Whenever a source router starts to send packet, it starts with an initial
+      TTL value (for this example, let’s say it starts at TTL=3). Each time the
+      packet passes through a router, that router decrements the TTL value by 1.
+      This process continues to travel across routers, whenever this TTL value
+      becomes 0, the router discards the packet and sends an ICMP message to its
+      sender with the error code as <b>“Time Exceeded”</b>.
+    </p>
+    <p>
+      This mechanism ensures that packets that can’t find their destination do
+      not remain on the network forever.
+    </p>
+    <img src="./TTL.webp" alt="TTL" />
+    <cite>
+      From the above image, Since the packets can able to reach from
+      src(1.1.1.1) to dest(5.5.5.5), discarding of packet is not needed.</cite
+    >
+    <h3>How Traceroute uses the TTL to determine the path</h3>
+    <p>
+      Traceroute basically uses this <b>TTL</b> value to map the path across the
+      src and dest networks.
+    </p>
+    <p>
+      Traceroute begins by sending packets with a low TTL value — initially 1
+      from the src network. The first router in the path receives the packet and
+      decrements the TTL by 1, since now the TTL becomes 0, the router discards
+      the packet and sends an ICMP message “Time Exceeded” back to the sender.
+    </p>
+    <p>
+      Traceroute then again increments the TTL and sends another packet with
+      TTL=2. This time, the first router allows the packet to pass by
+      decrementing the TTL value with 1, and the second router receives it. The
+      second router again decrements the TTL value by 1, since now the TTL
+      becomes 0, the router discards the packet and sends an ICMP message “Time
+      Exceeded” back to its sender.
+    </p>
+    <p>
+      This process repeats with incrementing TTL values until the packet reaches
+      the destination. At that point, the destination sends an ICMP “Destination
+      Unreachable” or “Echo Reply” message back to the sender, signaling that
+      the trace is complete. In this way, Traceroute can determine the path
+      (i.e., the sequence of routers) taken by the packet to reach the
+      destination.
+    </p>
+    <cite
+      >Following 3 images explain how traceroute can able to fetch the path by
+      each time incrementing the value of <b>TTL</b> by 1, untill it reaches the
+      destination path.</cite
+    >
+    <br />
+    <br />
+    <img src="./trace1.webp" alt="trace1" />
+    <img src="./trace2.webp" alt="trace2" />
+    <img src="./trace3.webp" alt="trace3" />
+    <p>
+      Yep, this is how traceroute use <b>TTL</b> effectively in order to
+      determine the network path.
+    </p>
+    <h3>Final Note, Can Traceroute be wrong</h3>
+    <p>
+      While exploring this Traceroute working, I had a question with myself,
+      What happens when the network path changes? since, networks are dynamic,
+      and routing paths can change for many reasons like load balancing, node
+      failure, or changes in routing rules.
+    </p>
+    <p>
+      In these cases, Traceroute may
+      <b>not always gives the most accurate or up-to-date network path</b>. It's
+      important to remember that traceroute gives the path at the time that it
+      runs, and this path could change depending on the network's current state.
+      It's a useful tool for troubleshooting, but it may not be always 100%
+      reliable in our dynamic network environment.
+    </p>
+    <hr />
+  </body>
 </html>
