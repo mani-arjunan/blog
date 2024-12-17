@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Traceroute! under the hood</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Source Sans Pro"
+      rel="stylesheet"
+    />
     <link href="../global.css" rel="stylesheet" />
     <link href="./index.css" rel="stylesheet" />
   </head>
@@ -46,10 +50,7 @@
       Layer 3, or the Network Layer, is responsible for transmitting our data in
       form of <b>packets</b> between devices on a network. Particularly, it
       handles the transmission of packets from our source IP to the destination
-      IP.
-    </p>
-    <p>
-      It does not care about anything else like <b>port numbers</b> or the
+      IP. It does not care about anything else like <b>port numbers</b> or the
       actual application-level communication. Its primary job is to route the
       packets from one device to another across different networks.
     </p>
@@ -61,11 +62,9 @@
     <h3>ICMP</h3>
     <p>
       ICMP (Internet Control Message Protocol) is a protocol that too comes
-      under Layer 3 (the Network Layer).
-    </p>
-    <p>
-      It’s mostly used by tools like <b>ping</b> and <b>traceroute</b> to send
-      information or error messages about the network conditions.
+      under Layer 3 (the Network Layer). It’s mostly used by tools like
+      <b>ping</b> and <b>traceroute</b> to send information or error messages
+      about the network conditions.
     </p>
     <p>
       ICMP plays a crucial part for the functioning of Traceroute, as it helps
@@ -75,12 +74,10 @@
     <h3>TTL</h3>
     <p>
       Now, let’s talk about <b>TTL</b> (Time To Live), which serves as an
-      important concept to understand how Traceroute works.
-    </p>
-    <p>
-      TTL serves many purposes, but one of its primary purpose is to prevent
-      packets from circulating indefinitely inside network devices(routers) if
-      in case they get stuck in a routing loop.
+      important concept to understand how Traceroute works. TTL serves many
+      purposes, but one of its primary purpose is to prevent packets from
+      circulating indefinitely inside network devices(routers) if in case they
+      get stuck in a routing loop.
     </p>
     <p>
       Imagine you’re sending a packet from your home network to a Google server.

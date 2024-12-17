@@ -8,6 +8,20 @@ a {
   color: #799ba5;
 }
 
+h2,
+h3 {
+  margin: 5pt 0 5pt 0;
+}
+
+ul {
+  list-style-type: disc;
+}
+
 li {
-  line-height: 20pt;
+  font-family:
+    "Source Sans Pro",
+    -apple-system,
+    BlinkMacSystemFont;
+  font-size: 15pt;
+  line-height: 25pt;
 }
