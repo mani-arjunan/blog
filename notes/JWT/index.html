@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JWT Notes</title>
+    <link href="../../global.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <a class="home" href="../../">Home</a>
+    <h1>JWT</h1>
+    <p>
+      JWT is a stateless token based authentication system, which is better than
+      our traditional token based stuff.
+    </p>
+    <h2>Traditional Token Based approach</h2>
+    <ul>
+      <li>A user logins into our application with username and password.</li>
+      <li>
+        After validating username and password, we will generate a unique
+        session token and sets in the cookie of the response and also will store
+        in our server DB.
+      </li>
+      <li>
+        For future requests we don't need to send username and password
+        everytime, we will validate whether the cookie has the token that
+        matches our database.
+      </li>
+    </ul>
+    <img src="./JWT.png" alt="JWT" />
+    <h2>What JWT does</h2>
+    <ul>
+      <li>It contains 3 parts Header, Data, signature.</li>
+      <li>Header => Basically the type of algorithm, eg: HS256, RSA</li>
+      <li>
+        Data => Usually user information like userId, ProfilePicid etc(some
+        basic stuff, not important information)
+      </li>
+      <li>
+        Signature => the BE will have a secret key which can be used to encrypt
+      </li>
+    </ul>
+    <h2>Flow</h2>
+    <ul>
+      <li>
+        Client sends a login request, servers validates the creds with DB and
+        creates two token one is JWT based token(access_token), this can be a
+        short lived token of expiry upto 1-2hr, and another normal
+        token(refresh_token) this can be long lived and be stored in database.
+      </li>
+      <li>
+        Client can store the JWT access token in cookie, refresh_token am not
+        sure(TBD)
+      </li>
+      <li>
+        For future request client can send the access_token and the server
+        validates and gives the response.
+      </li>
+      <li>
+        if the access_token expired, client can send a post request with
+        refresh_token to get the new access_token.
+      </li>
+      <li>
+        Why two tokens? => Bcoz JWT token is stateless and having only one token
+        can be very vulnerable, if it got into any hands of attacker, server
+        don't know whether the token is ok or not.
+      </li>
+      <li>On logout, refresh tokens should be deleted.</li>
+      <li>
+        Also its better to remove the refresh_token periodically(based on some
+        expiry time)
+      </li>
+    </ul>
+  </body>
+</html>

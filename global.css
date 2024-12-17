@@ -48,12 +48,26 @@ main {
   min-height: calc(90vh - 20pt);
 }
 
-#blog-list {
+.list {
   font-size: 18pt;
 }
 
 ul {
   list-style-type: none;
+}
+
+#blog-section {
+  min-height: 200pt;
+}
+
+#blog-section h3,
+ul {
+  margin: 20pt 0 10pt 0;
+}
+
+#notes-section h3,
+ul {
+  margin: 10pt 0 5pt 0;
 }
 
 /**/
