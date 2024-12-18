@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Backend(Node) with Kernel</title>
+  <link href="https://fonts.googleapis.com/css?family=Source Sans Pro" rel="stylesheet" />
+  <link href="../global.css" rel="stylesheet" />
+  <link href="./index.css" rel="stylesheet" />
+</head>
+
+<body>
+  <h1>Backend(Node) with Kernel</h1>
+  <img src="./node-kernel.webp" alt="Node with Kernel" />
+  <p>
+    I am currently exploring on low-level <b>networking</b> and
+    <b>Operating system</b> related concepts, particularly on how backend and
+    OS stuffs are inter-related.
+  </p>
+  <p>
+    While going through this i was so fascinated to read about on how
+    efficiently <b>Node.js handles concurrency with the help of Kernel</b></p>
+  </p>
+  <h2>Is Node a single-threaded, or does it use multi-threading or other mechanisms to manage concurrency?</h2>
+  <p>To answer this question,</p>
+  <p>let’s first review some basic concepts that are essential for understanding on how typical Backend application
+    works and how Node.js manages network connections and concurrency.</p>
+  <ul>
+    <li>
+      <h2>TCP (Layer 4)</h2>
+      <p>TCP (Transmission Control Protocol) is a Layer 4 protocol used to transmit data between devices on a network.
+        It is an upstream layer of the IP protocol (Layer 3) and provides a stateful-connection-oriented communication
+        method.</p>
+      <p>The operating system’s kernel itself manages the implementation, maintaining, and terminating these TCP
+        connections between source and destination.</p>
+    </li>
+    <li>
+      <h2>TCP Handshake</h2>
+      <p>The TCP handshake is a process that ensures a valid connection is established between a source and destination
+        before any data transfer can happen.</p>
+      <p>It’s a three-step process:</p>
+      <p> -> <b>SYN: The client sends a SYN (synchronize) packet to the server.</b></p>
+      <p> -> <b>SYN/ACK: The server responds with a SYN/ACK.(synchronize/acknowledge) packet to confirm the request.</b>
+      </p>
+      <p> -> <b> ACK: The client sends an ACK (acknowledge) packet back to the server to finalize the connection.</b>
+      </p>
+      <p>Once these three steps are completed, we can confirm that the TCP connection is established and both the source
+        and destination can exchange data.This connection is stateful, meaning both sides keep track of the connection’s
+        status throughout its lifetime.</p>
+    </li>
+    <li>
+      <h2>Single Threaded</h2>
+      <p>A single-threaded is a process that <b>executes only one instruction</b> at a time.In other words, a program in
+        a single thread can only <b>perform one task at a time</b>. When you’re working with a single-threaded system or
+        language,such as JavaScript in Node.js, there’s only one thread executing your code. It can’t “do” more than one
+        thing at the same time.</p>
+    </li>
+    <li>
+      <h2>Multi Threaded</h2>
+      <p>In a multi-threaded environment,a single process can spawn <b>multiple threads</b>.These threads shares the
+        same memory of the process and run in parallel which can handle different tasks simultaneously.</p>
+      <p>For example, consider two tasks (heavyProcessA and heavyProcessB),a multi-threaded system could run them in
+        parallel, using different CPU cores,rather than having to wait for one to finish before starting the other.</p>
+      <p>Here’s an example in pseudocode:</p>
+      <div class="code-block">
+        <p>threadA: heavyProcessA();</p>
+        <p>threadB: heavyProcessB();</p>
+      </div>
+      <p>In this example, heavyProcessA() and heavyProcessB() can execute Parallelly.</p>
+    </li>
+  </ul>
+  <h2>Ok now coming to the real question, Is Node.js Single-Threaded or Multi-Threaded?</h2>
+  <p>By default, Node.js is a <b>single-threaded</b> environment. which means that Node.js can processes only one
+    operation at a time. However, there are some exceptions. Certain operations, such as crypto, file I/O, and DNS
+    resolution, are given to a thread pool managed by libuv (the library that Node.js uses for asynchronous I/O
+    operations).</p>
+  <p>By default, Node.js has a thread pool of <b>4 threads</b>, but this can be configured up to a maximum of 1024
+    threads(though the exact maximum may depend on the system). The number of threads in the thread pool can be
+    controlled via the UV_THREADPOOL_SIZE environment variable.</p>
+  <p>Example: Consider the following code</p>
+  <div class="code-block">
+    <p>
+      const { pbkdf2 } = require("crypto");
+    </p>
+    <br />
+
+    <p>
+      console.log(`currently running threads: ${process.env.UV_THREADPOOL_SIZE}`);
+    </p>
+    <br />
+
+    <p>
+      const start = (task) => {
+    </p>
+    <p>
+      &nbsp;&nbsp;const st = Date.now();
+    </p>
+
+    <p>
+      &nbsp;&nbsp;pbkdf2("SECRET", "salt", 1000000, 64, "SHA512", () => {
+    </p>
+    <p>
+      &nbsp;&nbsp;&nbsp;&nbsp;console.log(`Finished running task ${task} in ${(Date.now() - st) / 1000} seconds`);
+    </p>
+    <p>
+      &nbsp;&nbsp;});
+    </p>
+    <p>
+      };
+    </p>
+
+    <p>
+      start(1);
+    </p>
+    <p>
+      start(2);
+    </p>
+    <p>
+      start(3);
+    </p>
+    <p>
+      start(4);
+    </p>
+  </div>
+  <br />
+  <img src="./output-thread.webp" alt="Output" />
+  <p>From the above output you can clearly confirm, that crypto is utilizing the libuv threads from the Node.js.</p>
+  <h2>This is not the case for network related stuffs like DB call, fetch request etc. If so then how node is handling n
+    number of Network Connections in a single thread?</h2>
+  <p>Before going into that, Below is an high-level overview steps of how a typical backend server handles a request and
+    response:</p>
+  <div class="side-block">
+    <p> <b>-> consider a backend application listens for incoming connections on a specific IP address and port (e.g.,
+        1.1.1.1:8080).</b>
+    </p>
+    <p><b>-> server kernel now creates a socket to listen on the port(8080) and manages two queues: the SYN queue and
+        the
+        Accept queue for this port.</b></p>
+    <p><b>-> client sends an HTTP request to the server on port 8080 at the specified.
+        address. This involves a SYN request from the client.</b></p>
+    <p><b>-> server kernel receives the SYN request, places it in the SYN queue, and responds with a SYN/ACK to the
+        client.</b></p>
+    <p><b>-> client replies with an ACK packet.</b></p>
+    <p><b>-> server kernel matches the ACK with the corresponding SYN in the queue, completes the TCP handshake, and
+        moves the connection from the SYN queue to the Accept queue.</b></p>
+    <p><b>-> BE application now retrieves the accepted connection (via the accept() system call) and removes the
+        connection from the Accept queue.</b></p>
+  </div>
+  <br />
+  <p>The accepted connection is returned in the form socket descriptor or file descriptor to BE, which can be observed
+    by running the following command in linux:</p>
+
+  <div class="code-block">lsof -n -i :8080</div>
+  <br />
+  <p>subsequent read and write operations to this connection are handled by the operating system kernel, while the
+    backend application only needs to make system calls (e.g., accept(), read(), write()) to interact with the
+    connection.</p>
+  <h2>How Node.js Utilizes the kernel to handle Concurrency?</h2>
+  <p>Node.js uses a long-running event loop(kinda while loop) to manage incoming requests and network connections. This
+    event loop runs continuously as long as the application process is active and constantly polls the operating system
+    (kernel) for updates on connections, such as when data is available to read, or when the connection is ready to be
+    written to.</p>
+  <p>This way Node.js manages concurrency using a single thread, while utilizing the operating system’s event-driven I/O
+    mechanisms, like epoll etc that allows it to handle thousands of concurrent network connections efficiently.
+  </p>
+  <p>This is just a drop in the ocean, There is much more to learn about the underlying mechanisms of how Node.js
+    handles this and the wonders that OS is doing for us to make our lives easier. Some topics we can explore further
+    include:</p>
+  <ol>
+    <li>
+      <p>Understanding of File descriptors in linux.</p>
+    </li>
+    <li>
+      <p>How node uses Epoll system call to handle this asynchronous IO?</p>
+    </li>
+    <li>
+      <p>How the event loop is keep running after our synchronous code?</p>
+    </li>
+    <li>
+      <p>How epoll/kqueue kinda stuff works in the kernel level?</p>
+    </li>
+  </ol>
+  <p>...and much more</p>
+  <hr />
+</body>
+
+</html>
